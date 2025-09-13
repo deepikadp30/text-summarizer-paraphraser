@@ -1,0 +1,39 @@
+import streamlit as st
+import textstat
+import pandas as pd
+import plotly.express as px
+
+def calculate_readability(text, label):
+    """Calculate multiple readability scores for given text"""
+    return {
+        "Text Type": label,
+        "Flesch Reading Ease": textstat.flesch_reading_ease(text),
+        "SMOG Index": textstat.smog_index(text),
+        "Gunning Fog": textstat.gunning_fog(text),
+        "ARI": textstat.automated_readability_index(text),
+        "Coleman Liau": textstat.coleman_liau_index(text)
+    }
+
+st.title("📊 Readability Score Comparison")
+
+# Example input (replace with your summarizer & paraphraser output)
+original_text = st.text_area("Enter Original Text", "Natural Language Processing is the field of AI...")
+summarized_text = st.text_area("Enter Summarized Text", "NLP is a field of AI...")
+paraphrased_text = st.text_area("Enter Paraphrased Text", "The area of AI dealing with language is NLP...")
+
+if st.button("Calculate Readability"):
+    results = []
+    results.append(calculate_readability(summarized_text, "Summarizer"))
+    results.append(calculate_readability(paraphrased_text, "Paraphraser"))
+
+    # Convert to DataFrame
+    df = pd.DataFrame(results)
+
+    st.subheader("📋 Readability Scores Table")
+    st.dataframe(df)
+
+    # Show Bar Chart
+    melted_df = df.melt(id_vars=["Text Type"], var_name="Metric", value_name="Score")
+    fig = px.bar(melted_df, x="Metric", y="Score", color="Text Type", barmode="group",
+                 title="Readability Score Comparison: Summarizer vs Paraphraser")
+    st.plotly_chart(fig)
